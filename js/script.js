@@ -10,12 +10,14 @@ async function fetchAPIDATA(endpoint) {
   const API_URL = "https://api.themoviedb.org/3/";
 
   try {
+    showSpinner();
     const response = await fetch(
       `${API_URL}${endpoint}?api_key=${API_KEY}&language=en-US`
     );
 
     const data = await response.json();
     console.log(data);
+    hideSpinner();
     return data;
   } catch (error) {
     console.log(error);
@@ -50,7 +52,6 @@ async function displayPopularShows() {
 async function displayPopularMovies() {
   const { results } = await fetchAPIDATA("movie/popular");
   console.log(results);
-
   results.forEach((movie) => {
     const div = document.createElement("div");
     div.className = "card";
@@ -70,6 +71,79 @@ async function displayPopularMovies() {
   </div>`;
     document.querySelector("#popular-movies").appendChild(div);
   });
+}
+
+// Movie Details
+async function movieDetails() {
+  const movieId = window.location.search.slice(1);
+  console.log(movieId);
+
+  const response = await fetchAPIDATA(`movie/${movieId}`);
+  console.log(response);
+
+  const div = document.createElement("div");
+
+  div.innerHTML = `<div class="details-top">
+  <div>
+        <img
+            src="https://image.tmdb.org/t/p/w500${response.poster_path}"
+            class="card-img-top"
+            alt="Movie Title"
+        />
+ </div>
+    <div>
+        <h2>${response.title}</h2>
+            <p>
+                <i class="fas fa-star text-primary"></i>
+            ${response.vote_average} / 10
+            </p>
+            <p class="text-muted">Release Date: ${response.release_date}</p>
+            <p>
+                ${response.overview}
+            </p>
+            <h5>Genres</h5>
+        <ul class="list-group">
+        ${response.genres.map((gen) => `<li>${gen.name}</li>`).join("")}
+        </ul>
+        <a href="${
+          response.homepage
+        }" target="_blank" class="btn">Visit Movie Homepage</a>
+    </div>
+  </div>
+
+ <div class="details-bottom">
+        <h2>Movie Info</h2>
+            <ul>
+            <li><span class="text-secondary">Budget:</span> $${
+              response.budget
+            }</li>
+            <li><span class="text-secondary">Revenue:</span> $2,000,000</li>
+            <li><span class="text-secondary">Runtime:</span> ${
+              response.runtime
+            } minutes</li>
+            <li><span class="text-secondary">Status:</span> Released</li>
+            </ul>
+            <h4>Production Companies</h4>
+
+            <div class="list-group">
+            ${response.production_companies
+              .map((company) => `<span>${company.name}</span>`)
+              .join(", ")}
+            </div>
+
+    </div>
+    </div>`;
+
+  document.querySelector("#movie-details").appendChild(div);
+}
+
+// Show Spinner
+function showSpinner() {
+  return document.querySelector(".spinner").classList.add("show");
+}
+// Hide Spinner
+function hideSpinner() {
+  return document.querySelector(".spinner").classList.remove("show");
 }
 
 // Highlight active link
@@ -100,7 +174,7 @@ function init() {
       break;
 
     case "/movie-details.html":
-      console.log("Movie Details");
+      movieDetails();
       break;
 
     case "/search.html":
